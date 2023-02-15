@@ -1,4 +1,7 @@
+import { useIsFirstOrLastPage } from '@/hooks/useIsFirstOrLastPage';
+import { useChangePage } from '@/hooks/useChangePage';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 type PokemonApiName = {
 	data: {
@@ -8,17 +11,14 @@ type PokemonApiName = {
 
 function Pokemon(props: PokemonApiName) {
 	const router = useRouter();
-	const fisrtPage = 1;
-	const lastPage = 19;
+	const [isFirstPage, setIsFirstPage] = useState(false);
+	const [isLastPage, setIsLastPage] = useState(false);
 	const pageNumber = Number(router.query.pokemons);
-	const paginationHandler = (symbol: string) => {
-		if (symbol === '+') {
-			router.push(`/pokemon/${pageNumber + 1}`);
-		}
-		if (symbol === '-') {
-			router.push(`/pokemon/${pageNumber - 1}`);
-		}
-	};
+	useEffect(() => {
+		const isItFirstOrLastPage = useIsFirstOrLastPage(pageNumber);
+		setIsLastPage(isItFirstOrLastPage.lastPage);
+		setIsFirstPage(isItFirstOrLastPage.firstPage);
+	}, [pageNumber]);
 	return (
 		<div
 			style={{
@@ -31,13 +31,13 @@ function Pokemon(props: PokemonApiName) {
 			<h1>{props.data.name}</h1>
 			<div style={{ display: 'flex', gap: 20 }}>
 				<button
-					onClick={() => paginationHandler('-')}
-					disabled={fisrtPage >= pageNumber}>
+					onClick={() => useChangePage('-', router, pageNumber)}
+					disabled={isFirstPage}>
 					Prev
 				</button>
 				<button
-					onClick={() => paginationHandler('+')}
-					disabled={lastPage <= pageNumber}>
+					onClick={() => useChangePage('+', router, pageNumber)}
+					disabled={isLastPage}>
 					Next
 				</button>
 			</div>
